@@ -1,267 +1,52 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <title>Quiz Educativo: Lei de Ohm, Potência e Energia Elétrica</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@600&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --primary: #005eff;
-      --success: #2ecc71;
-      --error: #e74c3c;
-      --bg: #f8f9fa;
-      --text: #2d3436;
-    }
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    body {
-      font-family: 'Roboto', sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
-      padding: 1em;
-    }
-    #container {
-      max-width: 700px;
-      margin: auto;
-    }
-    h1, h2 {
-      font-family: 'Montserrat', sans-serif;
-      text-align: center;
-      margin-bottom: 0.5em;
-    }
-    .btn {
-      background: var(--primary);
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      font-size: 16px;
-      border-radius: 6px;
-      cursor: pointer;
-      margin: 6px;
-    }
-    .btn:hover {
-      opacity: 0.9;
-    }
-    .score, .timer {
-      font-size: 18px;
-      margin-bottom: 0.5em;
-    }
-    .question {
-      font-size: 20px;
-      margin: 1em 0 0.5em;
-    }
-    .options {
-      display: flex;
-      flex-direction: column;
-      gap: 0.6em;
-    }
-    .option-btn {
-      padding: 10px;
-      background: #eee;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      cursor: pointer;
-      text-align: left;
-    }
-    .option-btn.correct {
-      background-color: var(--success);
-      color: white;
-    }
-    .option-btn.wrong {
-      background-color: var(--error);
-      color: white;
-    }
-    .ranking-list li {
-      padding: 4px 0;
-    }
-    .ranking-list span {
-      float: right;
-    }
-    .input-name {
-      padding: 10px;
-      width: 100%;
-      max-width: 300px;
-      display: block;
-      margin: auto;
-      margin-bottom: 8px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-    }
-    .hint-box {
-      text-align: center;
-      font-style: italic;
-      color: #333;
-      margin-top: 8px;
-    }
-    .music-btn {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: none;
-      border: none;
-      font-size: 22px;
-      cursor: pointer;
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quiz - Lei de Ohm</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div id="container">
-    <button class="music-btn" id="musicBtn" title="Música de Fundo"><span id="musicIcon">🔊</span></button>
-    <div id="screens">
-      <div id="startScreen">
-        <h1>Quiz: Lei de Ohm, Potência e Energia</h1>
-        <input type="text" class="input-name" id="playerName" placeholder="Digite seu nome">
-        <button class="btn" onclick="startGame()">Começar</button>
-      </div>
-      <div id="quizScreen" style="display:none">
-        <h2 id="questionText"></h2>
-        <div class="options" id="options"></div>
-        <div class="hint-box" id="hint"></div>
-      </div>
-      <div id="endScreen" style="display:none">
-        <h2>Fim de jogo!</h2>
-        <p class="score" id="finalScore"></p>
-        <h3>Ranking</h3>
-        <ul class="ranking-list" id="rankingList"></ul>
-        <button class="btn" onclick="location.reload()">Jogar Novamente</button>
-      </div>
+  <div id="start-screen">
+    <h1>Quiz - Lei de Ohm</h1>
+    <button onclick="startQuiz()" class="btn">Iniciar Quiz</button>
+  </div>
+
+  <div id="quiz-container" style="display: none;">
+    <div id="top-bar">
+      <span id="timer">00:00</span>
+      <button id="music-btn" class="music-btn">🔊</button>
+    </div>
+    <div id="question-container">
+      <h2 id="question"></h2>
+      <div id="answer-buttons" class="btn-container"></div>
     </div>
   </div>
+
+  <div id="result-screen" style="display: none;">
+    <h2 id="final-score"></h2>
+    <form id="rank-form">
+      <input type="text" id="username" placeholder="Seu nome" required />
+      <button type="submit" class="btn">Salvar no Ranking</button>
+    </form>
+    <button onclick="showRanking()" class="btn">Ver Ranking</button>
+    <button onclick="showStartScreen()" class="btn">Voltar ao Início</button>
+  </div>
+
+  <div id="ranking-screen" style="display: none;">
+    <h2>Ranking</h2>
+    <ul id="ranking-list"></ul>
+    <button onclick="showStartScreen()" class="btn">Voltar ao Início</button>
+  </div>
+
   <audio id="bgMusic" loop>
     <source src="audio/background.mp3" type="audio/mpeg">
   </audio>
-  <audio id="audioCorrect" src="audio/acerto.mp3"></audio>
-  <audio id="audioWrong" src="audio/erro.mp3"></audio>
+  <audio id="acerto" src="audio/acerto.mp3"></audio>
+  <audio id="erro" src="audio/erro.mp3"></audio>
 
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyAYOdNaZSoHjzQp4MBlTn6AS6yQsV2w4OU",
-      authDomain: "jogo-lei-de-ohm.firebaseapp.com",
-      databaseURL: "https://jogo-lei-de-ohm-default-rtdb.firebaseio.com",
-      projectId: "jogo-lei-de-ohm",
-      storageBucket: "jogo-lei-de-ohm.appspot.com",
-      messagingSenderId: "570929777785",
-      appId: "1:570929777785:web:cf323461fc61b2670e98a8"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    const screens = document.getElementById('screens');
-    const bgMusic = document.getElementById('bgMusic');
-    bgMusic.volume = 0.2;
-    const audioCorrect = document.getElementById('audioCorrect');
-    const audioWrong = document.getElementById('audioWrong');
-    const musicBtn = document.getElementById('musicBtn');
-    const musicIcon = document.getElementById('musicIcon');
-
-    let musicPlaying = true;
-    musicBtn.onclick = () => {
-      if (musicPlaying) {
-        bgMusic.pause();
-        musicIcon.textContent = '🔇';
-      } else {
-        bgMusic.play();
-        musicIcon.textContent = '🔊';
-      }
-      musicPlaying = !musicPlaying;
-    };
-
-    const questions = [
-      {
-        q: "Qual fórmula representa a Lei de Ohm?",
-        options: ["V = R/I", "V = R x I", "R = V + I", "I = V x R"],
-        correct: 1,
-        hint: "A tensão é o produto da resistência pela corrente."
-      },
-      {
-        q: "Se a corrente é 2A e a resistência é 5Ω, qual a tensão?",
-        options: ["10V", "0.4V", "7V", "3V"],
-        correct: 0,
-        hint: "Use V = R x I"
-      }
-    ];
-
-    let current = 0;
-    let score = 0;
-    let playerName = "";
-
-    function startGame() {
-      playerName = document.getElementById('playerName').value.trim();
-      if (!playerName) return alert("Digite seu nome para começar!");
-      document.getElementById('startScreen').style.display = 'none';
-      document.getElementById('quizScreen').style.display = 'block';
-      bgMusic.play();
-      loadQuestion();
-    }
-
-    function loadQuestion() {
-      const q = questions[current];
-      document.getElementById('questionText').textContent = q.q;
-      const options = document.getElementById('options');
-      options.innerHTML = "";
-      document.getElementById('hint').textContent = "";
-
-      q.options.forEach((opt, i) => {
-        const btn = document.createElement('button');
-        btn.textContent = opt;
-        btn.className = 'option-btn';
-        btn.onclick = () => checkAnswer(i);
-        options.appendChild(btn);
-      });
-    }
-
-    function checkAnswer(index) {
-      const q = questions[current];
-      const buttons = document.querySelectorAll('.option-btn');
-      if (index === q.correct) {
-        buttons[index].classList.add('correct');
-        audioCorrect.play();
-        score++;
-      } else {
-        buttons[index].classList.add('wrong');
-        buttons[q.correct].classList.add('correct');
-        document.getElementById('hint').textContent = q.hint;
-        audioWrong.play();
-      }
-
-      buttons.forEach(btn => btn.disabled = true);
-      setTimeout(() => {
-        current++;
-        if (current < questions.length) {
-          loadQuestion();
-        } else {
-          showEndScreen();
-        }
-      }, 1500);
-    }
-
-    function showEndScreen() {
-      document.getElementById('quizScreen').style.display = 'none';
-      document.getElementById('endScreen').style.display = 'block';
-      document.getElementById('finalScore').textContent = `Você acertou ${score} de ${questions.length}!`;
-      db.ref('ranking').push({ name: playerName, score });
-      db.ref('ranking').orderByChild('score').limitToLast(5).once('value', snapshot => {
-        const ranking = [];
-        snapshot.forEach(child => {
-          ranking.push(child.val());
-        });
-        ranking.reverse();
-        const ul = document.getElementById('rankingList');
-        ul.innerHTML = "";
-        ranking.forEach(p => {
-          const li = document.createElement('li');
-          li.textContent = `${p.name} - ${p.score}`;
-          ul.appendChild(li);
-        });
-      });
-    }
-  </script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
