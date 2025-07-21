@@ -114,19 +114,64 @@
 <body>
   <div id="container">
     <button class="music-btn" id="musicBtn" title="Música de Fundo"><span id="musicIcon">🔊</span></button>
-    <div id="screens"></div>
+    <div id="screens">
+      <div id="startScreen">
+        <h1>Quiz: Lei de Ohm, Potência e Energia</h1>
+        <input type="text" class="input-name" id="playerName" placeholder="Digite seu nome">
+        <button class="btn" onclick="startGame()">Começar</button>
+      </div>
+    </div>
   </div>
   <audio id="bgMusic" loop>
     <source src="audio/background.mp3" type="audio/mpeg">
   </audio>
   <audio id="audioCorrect" src="audio/acerto.mp3"></audio>
   <audio id="audioWrong" src="audio/erro.mp3"></audio>
-  <!-- Firebase SDKs -->
+
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-  <!-- Jogo script incluído abaixo -->
+
   <script>
-    // Seu script do jogo continua aqui, idêntico ao que você enviou (já está ajustado para música local)
+    const firebaseConfig = {
+      apiKey: "AIzaSyAYOdNaZSoHjzQp4MBlTn6AS6yQsV2w4OU",
+      authDomain: "jogo-lei-de-ohm.firebaseapp.com",
+      databaseURL: "https://jogo-lei-de-ohm-default-rtdb.firebaseio.com",
+      projectId: "jogo-lei-de-ohm",
+      storageBucket: "jogo-lei-de-ohm.appspot.com",
+      messagingSenderId: "570929777785",
+      appId: "1:570929777785:web:cf323461fc61b2670e98a8",
+      measurementId: "G-2SYC0XWDXW"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const screens = document.getElementById('screens');
+    const bgMusic = document.getElementById('bgMusic');
+    bgMusic.volume = 0.2;
+    const audioCorrect = document.getElementById('audioCorrect');
+    const audioWrong = document.getElementById('audioWrong');
+    const musicBtn = document.getElementById('musicBtn');
+    const musicIcon = document.getElementById('musicIcon');
+
+    let musicPlaying = true;
+    musicBtn.onclick = () => {
+      if (musicPlaying) {
+        bgMusic.pause();
+        musicIcon.textContent = '🔇';
+      } else {
+        bgMusic.play();
+        musicIcon.textContent = '🔊';
+      }
+      musicPlaying = !musicPlaying;
+    };
+
+    function startGame() {
+      const playerName = document.getElementById('playerName').value.trim();
+      if (!playerName) return alert("Digite seu nome para começar!");
+      bgMusic.play();
+      // Aqui você pode seguir com a lógica do quiz
+      alert(`Boa sorte, ${playerName}!`);
+    }
   </script>
 </body>
 </html>
