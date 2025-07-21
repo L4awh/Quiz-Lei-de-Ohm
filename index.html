@@ -167,13 +167,11 @@
     <button class="music-btn" id="musicBtn" title="Música de Fundo"><span id="musicIcon">🔊</span></button>
     <div id="screens"></div>
   </div>
-
-<audio id="bgMusic" loop>
-  <source src="audio/background.mp3" type="audio/mpeg">
-</audio>
-<audio id="audioCorrect" src="audio/certo.mp3"></audio>
-<audio id="audioWrong" src="audio/errado.mp3"></audio>
-
+  <audio id="bgMusic" loop>
+    <source src="audio/background.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="audioCorrect" src="audio/certo.mp3"></audio>
+  <audio id="audioWrong" src="audio/errado.mp3"></audio>
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
@@ -228,7 +226,7 @@
     musicBtn.onclick = () => {
       gameState.isMusicOn = !gameState.isMusicOn;
       if (gameState.isMusicOn) {
-        bgMusic.volume = 0.20;  // volume ajustado
+        bgMusic.volume = 0.20;
         bgMusic.play();
         musicIcon.innerText = '🔊';
       } else {
@@ -396,13 +394,37 @@
           arr = arr.sort((a,b)=>b.score-a.score || a.ts-b.ts).slice(0,10); // desempate: mais antigo primeiro
           if (arr.length === 0) return `<div style="color:#888;text-align:center;">Nenhum jogador ainda!</div>`;
           return `<ol class="ranking-list">${arr.map((entry, idx) =>
-            `<li><span>${idx+1}. ${entry.name}</span><span>${entry.score} pts</span></li>`).join('')}</ol>`;
-        })
-        .catch(() => `<div style="color:#888;text-align:center;">Erro ao carregar ranking.</div>`);
+            `<li>${idx+1}. ${entry.name} <span>${entry.score} pts</span></li>`
+          ).join('')}</ol>`;
+        });
     }
 
-    // Inicia o menu
+    // Expondo funções globais
+    window.startGame = startGame;
+    window.showHint = showHint;
+    window.answerQuestion = answerQuestion;
+    window.nextQuestion = nextQuestion;
+    window.showStartScreen = showStartScreen;
+    window.saveScore = saveScore;
+
+    // Início
     showStartScreen();
+
+    // Touch-friendly button sound effects
+    function enableTouchSound() {
+      document.body.addEventListener('touchstart', function(e) {
+        if (e.target.classList.contains('option-btn') || e.target.classList.contains('btn')) {
+          e.target.style.transform = 'scale(0.95)';
+        }
+      });
+      document.body.addEventListener('touchend', function(e) {
+        if (e.target.classList.contains('option-btn') || e.target.classList.contains('btn')) {
+          e.target.style.transform = 'scale(1)';
+        }
+      });
+    }
+    enableTouchSound();
+
   </script>
 </body>
 </html>
