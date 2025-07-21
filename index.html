@@ -167,11 +167,13 @@
     <button class="music-btn" id="musicBtn" title="Música de Fundo"><span id="musicIcon">🔊</span></button>
     <div id="screens"></div>
   </div>
+
   <audio id="bgMusic" loop>
     <source src="https://cdn.pixabay.com/audio/2022/07/26/audio_119b7e8e27.mp3" type="audio/mpeg">
   </audio>
   <audio id="audioCorrect" src="https://cdn.pixabay.com/audio/2022/10/16/audio_1261c68f52.mp3"></audio>
   <audio id="audioWrong" src="https://cdn.pixabay.com/audio/2022/10/16/audio_1261c68f52.mp3"></audio>
+
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
@@ -223,15 +225,11 @@
     const audioCorrect = document.getElementById('audioCorrect');
     const audioWrong = document.getElementById('audioWrong');
 
-    // Corrigindo volume e sons para acerto e erro diferentes:
-    audioCorrect.src = "https://cdn.pixabay.com/audio/2022/03/15/audio_c14be266c3.mp3";
-    audioWrong.src = "https://cdn.pixabay.com/audio/2022/10/16/audio_1fa85cf7b1.mp3";
-
     musicBtn.onclick = () => {
       gameState.isMusicOn = !gameState.isMusicOn;
       if (gameState.isMusicOn) {
-        bgMusic.volume = 0.18;
-        bgMusic.play().catch(() => {});
+        bgMusic.volume = 0.20;  // volume ajustado
+        bgMusic.play();
         musicIcon.innerText = '🔊';
       } else {
         bgMusic.pause();
@@ -388,49 +386,23 @@
 
     async function renderRanking() {
       // Busca do Firebase os 10 maiores scores
-      try {
-        const snapshot = await db.ref('ranking_ohm')
-          .orderByChild('score')
-          .limitToLast(10)
-          .once('value');
-        let arr = [];
-        snapshot.forEach(child => arr.push(child.val()));
-        arr = arr.sort((a,b) => b.score - a.score || a.ts - b.ts).slice(0,10);
-        if (arr.length === 0) return `<div style="color:#888;text-align:center;">Nenhum jogador ainda!</div>`;
-        return `<ol class="ranking-list">${arr.map((entry, idx) =>
-          `<li>${idx+1}. ${entry.name} <span>${entry.score} pts</span></li>`
-        ).join('')}</ol>`;
-      } catch(e) {
-        return `<div style="color:#888;text-align:center;">Erro ao carregar ranking.</div>`;
-      }
+      return db.ref('ranking_ohm')
+        .orderByChild('score')
+        .limitToLast(10)
+        .once('value')
+        .then(snapshot => {
+          let arr = [];
+          snapshot.forEach(child => arr.push(child.val()));
+          arr = arr.sort((a,b)=>b.score-a.score || a.ts-b.ts).slice(0,10); // desempate: mais antigo primeiro
+          if (arr.length === 0) return `<div style="color:#888;text-align:center;">Nenhum jogador ainda!</div>`;
+          return `<ol class="ranking-list">${arr.map((entry, idx) =>
+            `<li><span>${idx+1}. ${entry.name}</span><span>${entry.score} pts</span></li>`).join('')}</ol>`;
+        })
+        .catch(() => `<div style="color:#888;text-align:center;">Erro ao carregar ranking.</div>`);
     }
 
-    // Expondo funções globais
-    window.startGame = startGame;
-    window.showHint = showHint;
-    window.answerQuestion = answerQuestion;
-    window.nextQuestion = nextQuestion;
-    window.showStartScreen = showStartScreen;
-    window.saveScore = saveScore;
-
-    // Início
+    // Inicia o menu
     showStartScreen();
-
-    // Touch-friendly button sound effects
-    function enableTouchSound() {
-      document.body.addEventListener('touchstart', function(e) {
-        if (e.target.classList.contains('option-btn')) {
-          audioCorrect.currentTime = 0;
-          audioWrong.currentTime = 0;
-        }
-      }, {passive:true});
-    }
-    enableTouchSound();
-
-    window.addEventListener('orientationchange', function() {});
-    screens.style.transition = "opacity .35s";
-    document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
-
   </script>
 </body>
 </html>
