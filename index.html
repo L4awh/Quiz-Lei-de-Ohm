@@ -46,9 +46,6 @@
     .btn:hover {
       opacity: 0.9;
     }
-    .toggle {
-      background: #888;
-    }
     .score, .timer {
       font-size: 18px;
       margin-bottom: 0.5em;
@@ -120,6 +117,18 @@
         <input type="text" class="input-name" id="playerName" placeholder="Digite seu nome">
         <button class="btn" onclick="startGame()">Começar</button>
       </div>
+      <div id="quizScreen" style="display:none">
+        <h2 id="questionText"></h2>
+        <div class="options" id="options"></div>
+        <div class="hint-box" id="hint"></div>
+      </div>
+      <div id="endScreen" style="display:none">
+        <h2>Fim de jogo!</h2>
+        <p class="score" id="finalScore"></p>
+        <h3>Ranking</h3>
+        <ul class="ranking-list" id="rankingList"></ul>
+        <button class="btn" onclick="location.reload()">Jogar Novamente</button>
+      </div>
     </div>
   </div>
   <audio id="bgMusic" loop>
@@ -139,8 +148,7 @@
       projectId: "jogo-lei-de-ohm",
       storageBucket: "jogo-lei-de-ohm.appspot.com",
       messagingSenderId: "570929777785",
-      appId: "1:570929777785:web:cf323461fc61b2670e98a8",
-      measurementId: "G-2SYC0XWDXW"
+      appId: "1:570929777785:web:cf323461fc61b2670e98a8"
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
@@ -165,12 +173,94 @@
       musicPlaying = !musicPlaying;
     };
 
+    const questions = [
+      {
+        q: "Qual fórmula representa a Lei de Ohm?",
+        options: ["V = R/I", "V = R x I", "R = V + I", "I = V x R"],
+        correct: 1,
+        hint: "A tensão é o produto da resistência pela corrente."
+      },
+      {
+        q: "Se a corrente é 2A e a resistência é 5Ω, qual a tensão?",
+        options: ["10V", "0.4V", "7V", "3V"],
+        correct: 0,
+        hint: "Use V = R x I"
+      }
+    ];
+
+    let current = 0;
+    let score = 0;
+    let playerName = "";
+
     function startGame() {
-      const playerName = document.getElementById('playerName').value.trim();
+      playerName = document.getElementById('playerName').value.trim();
       if (!playerName) return alert("Digite seu nome para começar!");
+      document.getElementById('startScreen').style.display = 'none';
+      document.getElementById('quizScreen').style.display = 'block';
       bgMusic.play();
-      // Aqui você pode seguir com a lógica do quiz
-      alert(`Boa sorte, ${playerName}!`);
+      loadQuestion();
+    }
+
+    function loadQuestion() {
+      const q = questions[current];
+      document.getElementById('questionText').textContent = q.q;
+      const options = document.getElementById('options');
+      options.innerHTML = "";
+      document.getElementById('hint').textContent = "";
+
+      q.options.forEach((opt, i) => {
+        const btn = document.createElement('button');
+        btn.textContent = opt;
+        btn.className = 'option-btn';
+        btn.onclick = () => checkAnswer(i);
+        options.appendChild(btn);
+      });
+    }
+
+    function checkAnswer(index) {
+      const q = questions[current];
+      const buttons = document.querySelectorAll('.option-btn');
+      if (index === q.correct) {
+        buttons[index].classList.add('correct');
+        audioCorrect.play();
+        score++;
+      } else {
+        buttons[index].classList.add('wrong');
+        buttons[q.correct].classList.add('correct');
+        document.getElementById('hint').textContent = q.hint;
+        audioWrong.play();
+      }
+
+      buttons.forEach(btn => btn.disabled = true);
+      setTimeout(() => {
+        current++;
+        if (current < questions.length) {
+          loadQuestion();
+        } else {
+          showEndScreen();
+        }
+      }, 1500);
+    }
+
+    function showEndScreen() {
+      document.getElementById('quizScreen').style.display = 'none';
+      document.getElementById('endScreen').style.display = 'block';
+      document.getElementById('finalScore').textContent = `Você acertou ${score} de ${questions.length}!`;
+      db.ref('ranking').push({ name: playerName, score });
+      db.ref('ranking').orderByChild('score').limitToLast(5).once('value', snapshot => {
+        const ranking = [];
+        snapshot.forEach(child => {
+          ranking.push(child.val());
+        });
+        ranking.reverse();
+        const ul = document.getElementById('rankingList');
+        ul.innerHTML = "";
+        ranking.forEach(p => {
+          const li = document.createElement('li');
+          li.textContent = `${p.name} - ${p.score}`;
+          ul.appendChild(li);
+        });
+      });
     }
   </script>
 </body>
