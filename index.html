@@ -376,27 +376,51 @@
       }
       document.getElementById('inputName').disabled = true;
       const entry = { name, score: gameState.score, ts: Date.now() };
-      // Salva no Firebase
-      db.ref('ranking_ohm').push(entry, function(error) {
-        setTimeout(() => { showGameOver(); }, 300);
-      });
+      
+      // Salva no Firebase com tratamento de erro melhorado
+      db.ref('ranking_ohm').push(entry)
+        .then(() => {
+          console.log('Pontuação salva com sucesso!');
+          setTimeout(() => { showGameOver(); }, 500);
+        })
+        .catch((error) => {
+          console.error('Erro ao salvar pontuação:', error);
+          alert('Erro ao salvar pontuação. Tente novamente.');
+          document.getElementById('inputName').disabled = false;
+        });
     }
 
     async function renderRanking() {
-      // Busca do Firebase os 10 maiores scores
-      return db.ref('ranking_ohm')
-        .orderByChild('score')
-        .limitToLast(10)
-        .once('value')
-        .then(snapshot => {
-          let arr = [];
-          snapshot.forEach(child => arr.push(child.val()));
-          arr = arr.sort((a,b)=>b.score-a.score || a.ts-b.ts).slice(0,10); // desempate: mais antigo primeiro
-          if (arr.length === 0) return `<div style="color:#888;text-align:center;">Nenhum jogador ainda!</div>`;
-          return `<ol class="ranking-list">${arr.map((entry, idx) =>
-            `<li>${idx+1}. ${entry.name} <span>${entry.score} pts</span></li>`
-          ).join('')}</ol>`;
+      try {
+        // Busca todos os registros e ordena no cliente para garantir ordenação correta
+        const snapshot = await db.ref('ranking_ohm').once('value');
+        let arr = [];
+        
+        snapshot.forEach(child => {
+          const data = child.val();
+          if (data && data.name && typeof data.score === 'number') {
+            arr.push(data);
+          }
         });
+        
+        // Ordena por score decrescente, depois por timestamp crescente (mais antigo primeiro em caso de empate)
+        arr = arr.sort((a, b) => {
+          if (b.score !== a.score) return b.score - a.score;
+          return a.ts - b.ts;
+        }).slice(0, 10); // Pega apenas os top 10
+        
+        if (arr.length === 0) {
+          return `<div style="color:#888;text-align:center;">Nenhum jogador ainda!</div>`;
+        }
+        
+        return `<ol class="ranking-list">${arr.map((entry, idx) =>
+          `<li>${idx+1}. ${entry.name} <span>${entry.score} pts</span></li>`
+        ).join('')}</ol>`;
+        
+      } catch (error) {
+        console.error('Erro ao carregar ranking:', error);
+        return `<div style="color:#888;text-align:center;">Erro ao carregar ranking</div>`;
+      }
     }
 
     // Expondo funções globais
