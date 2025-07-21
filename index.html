@@ -1,52 +1,435 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Quiz - Lei de Ohm</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <title>Quiz Educativo: Lei de Ohm, Potência e Energia Elétrica</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1155cc;
+      --accent: #f7c948;
+      --success: #31c48d;
+      --error: #e12d39;
+      --bg: #f1f7fa;
+      --txt: #222;
+    }
+    body {
+      background: var(--bg);
+      font-family: 'Roboto', 'Montserrat', Arial, sans-serif;
+      color: var(--txt);
+      margin: 0;
+      padding: 0;
+    }
+    #container {
+      max-width: 440px;
+      margin: 2em auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 6px 24px rgba(50,60,80,.07);
+      padding: 2em 1.2em 2.5em;
+      position: relative;
+    }
+    h1, h2 {
+      font-family: 'Montserrat', Arial, sans-serif;
+      font-weight: 600;
+      color: var(--primary);
+      text-align: center;
+      margin-top: 0.4em;
+      margin-bottom: 0.3em;
+    }
+    .score {
+      font-size: 1.1em;
+      color: var(--success);
+      font-weight: bold;
+      text-align: right;
+      margin-bottom: .5em;
+    }
+    .timer {
+      font-size: 1em;
+      color: var(--accent);
+      text-align: right;
+      margin-bottom: .9em;
+      margin-top: -1em;
+    }
+    .question {
+      font-size: 1.1em;
+      font-weight: 700;
+      margin-bottom: .9em;
+      margin-top: .6em;
+      text-align: center;
+    }
+    .options {
+      display: grid;
+      gap: .7em;
+      margin-bottom: .6em;
+    }
+    .option-btn {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: .75em 1em;
+      font-size: 1em;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background .2s;
+    }
+    .option-btn:hover:not(:disabled) {
+      background: #0b3d91;
+    }
+    .option-btn.correct {
+      background: var(--success);
+    }
+    .option-btn.wrong {
+      background: var(--error);
+    }
+    .btn {
+      background: var(--accent);
+      color: #333;
+      border: none;
+      border-radius: 8px;
+      padding: .6em 1.5em;
+      font-size: 1em;
+      cursor: pointer;
+      font-weight: 600;
+      margin: .8em .2em;
+      transition: background .2s;
+    }
+    .btn.toggle {
+      background: #eee;
+    }
+    .btn:active,
+    .btn.toggle:active {
+      background: #ddd;
+    }
+    .input-name {
+      padding: .5em;
+      font-size: 1.1em;
+      border-radius: 8px;
+      border: 1.5px solid #ccc;
+      margin-bottom: .7em;
+      width: 90%;
+    }
+    .hint-box {
+      background: #edf5ff;
+      color: #1155cc;
+      border-left: 4px solid var(--primary);
+      padding: .7em 1em;
+      margin: .8em 0 .2em 0;
+      border-radius: 6px;
+      font-size: .97em;
+      text-align: left;
+    }
+    .ranking-list {
+      background: #f9fafc;
+      border-radius: 8px;
+      padding: .7em 1.5em;
+      font-size: 1em;
+      margin: 1em auto .2em auto;
+      max-width: 330px;
+      color: #333;
+      box-shadow: 0 1px 4px rgba(80,70,70,.05);
+    }
+    .ranking-list li {
+      margin:.4em 0;
+      padding:.2em 0;
+      font-weight:600;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      border-bottom:1px dashed #e4e4e4;
+    }
+    .ranking-list li:last-child {
+      border-bottom:none;
+    }
+    .music-btn {
+      position: absolute;
+      right: 15px;
+      top: 12px;
+      background: none;
+      border: none;
+      font-size: 1.5em;
+      cursor: pointer;
+      z-index: 99;
+      color: var(--primary);
+      transition: color .2s;
+    }
+    .music-btn:hover { color: var(--accent);}
+    @media (max-width:500px){
+      #container {max-width:96vw;padding:.9em .3em 1.7em;}
+    }
+  </style>
 </head>
 <body>
-  <div id="start-screen">
-    <h1>Quiz - Lei de Ohm</h1>
-    <button onclick="startQuiz()" class="btn">Iniciar Quiz</button>
+  <div id="container">
+    <button class="music-btn" id="musicBtn" title="Música de Fundo"><span id="musicIcon">🔊</span></button>
+    <div id="screens"></div>
   </div>
-
-  <div id="quiz-container" style="display: none;">
-    <div id="top-bar">
-      <span id="timer">00:00</span>
-      <button id="music-btn" class="music-btn">🔊</button>
-    </div>
-    <div id="question-container">
-      <h2 id="question"></h2>
-      <div id="answer-buttons" class="btn-container"></div>
-    </div>
-  </div>
-
-  <div id="result-screen" style="display: none;">
-    <h2 id="final-score"></h2>
-    <form id="rank-form">
-      <input type="text" id="username" placeholder="Seu nome" required />
-      <button type="submit" class="btn">Salvar no Ranking</button>
-    </form>
-    <button onclick="showRanking()" class="btn">Ver Ranking</button>
-    <button onclick="showStartScreen()" class="btn">Voltar ao Início</button>
-  </div>
-
-  <div id="ranking-screen" style="display: none;">
-    <h2>Ranking</h2>
-    <ul id="ranking-list"></ul>
-    <button onclick="showStartScreen()" class="btn">Voltar ao Início</button>
-  </div>
-
   <audio id="bgMusic" loop>
-    <source src="audio/background.mp3" type="audio/mpeg">
+    <source src="https://cdn.pixabay.com/audio/2022/07/26/audio_119b7e8e27.mp3" type="audio/mpeg">
   </audio>
-  <audio id="acerto" src="audio/acerto.mp3"></audio>
-  <audio id="erro" src="audio/erro.mp3"></audio>
+  <audio id="audioCorrect" src="https://cdn.pixabay.com/audio/2022/10/16/audio_1261c68f52.mp3"></audio>
+  <audio id="audioWrong" src="https://cdn.pixabay.com/audio/2022/10/16/audio_1261c68f52.mp3"></audio>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script>
+    // === CONFIGURAÇÃO DO SEU FIREBASE ===
+    const firebaseConfig = {
+      apiKey: "AIzaSyAYOdNaZSOHjzQp4MB1Tn6AS6yQsV2w40U",
+      authDomain: "jogo-lei-de-ohm.firebaseapp.com",
+      databaseURL: "https://jogo-lei-de-ohm-default-rtdb.firebaseio.com",
+      projectId: "jogo-lei-de-ohm",
+      storageBucket: "jogo-lei-de-ohm.appspot.com",
+      messagingSenderId: "570929777785",
+      appId: "1:570929777785:web:cf323461fc61b2670e98a8",
+      measurementId: "G-2SYC0XWDXW"
+    };
 
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-  <script src="script.js"></script>
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Perguntas e respostas
+    const questions = [
+      { question: 'O que estabelece a Lei de Ohm?', options: ['A relação entre corrente e resistência', 'A relação entre tensão, corrente e resistência', 'A relação entre potência e energia', 'A relação entre frequência e tensão'], correct: 1, hint: 'Pense na famosa fórmula: V = R × I' },
+      { question: 'Se uma resistência de 10 Ω é percorrida por uma corrente de 2 A, qual a tensão nos terminais?', options: ['5 V', '8 V', '20 V', '12 V'], correct: 2, hint: 'Use V = R × I' },
+      { question: 'Qual unidade de medida da resistência elétrica?', options: ['Ampère', 'Watt', 'Ohm', 'Volt'], correct: 2, hint: 'É representada pelo símbolo Ω' },
+      { question: 'Como calcular a potência elétrica?', options: ['P = V / I', 'P = V × I', 'P = R × V', 'P = I / V'], correct: 1, hint: 'Potência depende da tensão e da corrente' },
+      { question: 'Um aparelho opera com 220 V e consome 2 A. Qual a potência elétrica?', options: ['110 W', '440 W', '220 W', '222 W'], correct: 1, hint: 'Use P = V × I' },
+      { question: 'Qual unidade de medida da potência elétrica?', options: ['Joule', 'Watt', 'Ampère', 'Ohm'], correct: 1, hint: 'É representada pela letra W' },
+      { question: 'Como calcular a energia elétrica consumida?', options: ['E = P × t', 'E = V × R', 'E = I × R', 'E = P / t'], correct: 0, hint: 'Tempo deve estar em horas ou segundos' },
+      { question: 'Qual unidade de medida da energia elétrica usada nas contas de luz?', options: ['Watt', 'Ohm', 'KWh', 'Ampère'], correct: 2, hint: 'É uma unidade composta de potência e tempo' },
+      { question: 'Se um chuveiro de 5500 W funciona por 1 hora, quantos kWh são consumidos?', options: ['5,5 kWh', '550 kWh', '0,55 kWh', '1 kWh'], correct: 0, hint: 'Divida a potência por 1000 para chegar em kWh' },
+      { question: 'Aumentando a resistência de um circuito, o que acontece com a corrente, se a tensão for constante?', options: ['Aumenta', 'Permanece igual', 'Diminui', 'Cessa completamente'], correct: 2, hint: 'Considere a fórmula I = V / R' }
+    ];
+
+    // Estado do jogo
+    let gameState = {
+      currentQuestion: 0,
+      score: 0,
+      timer: null,
+      timeLeft: 20,
+      isMusicOn: false,
+      fastBonus: 5,
+      answered: false
+    };
+
+    const screens = document.getElementById('screens');
+    const bgMusic = document.getElementById('bgMusic');
+    const musicBtn = document.getElementById('musicBtn');
+    const musicIcon = document.getElementById('musicIcon');
+    const audioCorrect = document.getElementById('audioCorrect');
+    const audioWrong = document.getElementById('audioWrong');
+
+    // Sons corrigidos: sons diferentes para acerto e erro
+    audioCorrect.src = "https://cdn.pixabay.com/audio/2022/03/15/audio_c14be266c3.mp3";
+    audioWrong.src = "https://cdn.pixabay.com/audio/2022/10/16/audio_1fa85cf7b1.mp3";
+
+    musicBtn.onclick = () => {
+      gameState.isMusicOn = !gameState.isMusicOn;
+      if (gameState.isMusicOn) {
+        bgMusic.volume = 0.18;
+        bgMusic.play().catch(() => {}); // evita erro autoplay bloqueado
+        musicIcon.innerText = '🔊';
+      } else {
+        bgMusic.pause();
+        musicIcon.innerText = '🔇';
+      }
+    };
+
+    // Funções principais de tela:
+    function showStartScreen() {
+      renderRanking().then(rankingHTML => {
+        screens.innerHTML = `
+          <h1>Quiz: Lei de Ohm, Potência e Energia Elétrica</h1>
+          <h2>Teste seus conhecimentos!</h2>
+          <div style="text-align:center;">
+            <button class="btn" onclick="startGame()">Iniciar Jogo</button>
+          </div>
+          <div style="margin-top:1.4em;">
+            <h2>Ranking Global</h2>
+            ${rankingHTML}
+          </div>
+        `;
+      });
+    }
+
+    function startGame() {
+      gameState.currentQuestion = 0;
+      gameState.score = 0;
+      gameState.answered = false;
+      showQuestion();
+    }
+
+    function showQuestion() {
+      const q = questions[gameState.currentQuestion];
+      gameState.answered = false;
+      gameState.timeLeft = 20;
+      const scoreText = `<div class="score">Pontuação: ${gameState.score}</div>`;
+      const timerText = `<div class="timer">Tempo: <span id="timeLeft">${gameState.timeLeft}</span>s</div>`;
+      screens.innerHTML = `
+        ${scoreText}
+        ${timerText}
+        <div class="question">${q.question}</div>
+        <div class="options">
+          ${q.options.map((opt, i) =>
+            `<button class="option-btn" onclick="answerQuestion(${i})" id="option${i}">${opt}</button>`
+          ).join('')}
+        </div>
+        <div style="text-align:center;">
+          <button class="btn" onclick="showHint()">Dica</button>
+        </div>
+        <div id="hintBox"></div>
+      `;
+      startTimer();
+    }
+
+    function showHint() {
+      const q = questions[gameState.currentQuestion];
+      document.getElementById('hintBox').innerHTML = `<div class="hint-box">${q.hint}</div>`;
+    }
+
+    function startTimer() {
+      clearInterval(gameState.timer);
+      let start = Date.now();
+      function tick() {
+        if (gameState.answered) return;
+        gameState.timeLeft = 20 - Math.floor((Date.now() - start) / 1000);
+        if (gameState.timeLeft < 0) gameState.timeLeft = 0;
+        document.getElementById('timeLeft').innerText = gameState.timeLeft;
+        if (gameState.timeLeft <= 0) {
+          clearInterval(gameState.timer);
+          answerQuestion(-1); // tempo esgotado
+        }
+      }
+      tick();
+      gameState.timer = setInterval(tick, 300);
+    }
+
+    function answerQuestion(selected) {
+      if (gameState.answered) return;
+      gameState.answered = true;
+      clearInterval(gameState.timer);
+      const q = questions[gameState.currentQuestion];
+      let isCorrect = selected === q.correct;
+      let feedbackText = '';
+      for (let i = 0; i < q.options.length; i++) {
+        const btn = document.getElementById('option'+i);
+        if (!btn) continue;
+        if (i === q.correct) btn.classList.add('correct');
+        if (selected === i && !isCorrect) btn.classList.add('wrong');
+        btn.disabled = true;
+      }
+      let points = isCorrect ? 10 : 0;
+      if (isCorrect && gameState.timeLeft > 15) points += gameState.fastBonus;
+      else if (isCorrect && gameState.timeLeft > 5) points += Math.floor(gameState.fastBonus * (gameState.timeLeft - 5) / 10);
+      if (isCorrect) {
+        audioCorrect.currentTime = 0; audioCorrect.play();
+        feedbackText = `<div style="color:var(--success);font-weight:700;">Resposta correta! +${points} pontos.</div>`;
+      } else {
+        audioWrong.currentTime = 0; audioWrong.play();
+        feedbackText = `<div style="color:var(--error);font-weight:700;">Resposta incorreta.</div>`;
+      }
+      gameState.score += points;
+      setTimeout(() => {
+        screens.innerHTML += `
+          <div style="margin-top:1.1em;text-align:center;">
+            ${feedbackText}
+            <div class="score">Pontuação: ${gameState.score}</div>
+            <button class="btn" onclick="nextQuestion()">Próxima Pergunta</button>
+          </div>
+        `;
+      }, 850);
+    }
+
+    function nextQuestion() {
+      gameState.currentQuestion++;
+      if (gameState.currentQuestion >= questions.length) {
+        showGameOver();
+      } else {
+        showQuestion();
+      }
+    }
+
+    function showGameOver() {
+      renderRanking().then(rankingHTML => {
+        screens.innerHTML = `
+          <h1>Fim de Jogo!</h1>
+          <div class="score">Pontuação final: ${gameState.score}</div>
+          <div style="margin-bottom:1.1em;">
+            <input type="text" maxlength="18" id="inputName" class="input-name" placeholder="Seu nome para o ranking">
+            <button class="btn" onclick="saveScore()">Salvar Pontuação</button>
+          </div>
+          <button class="btn" onclick="startGame()">Jogar Novamente</button>
+          <button class="btn toggle" onclick="showStartScreen()">Voltar ao Início</button>
+          <h2>Ranking Global</h2>
+          <div id="rankingBox">${rankingHTML}</div>
+        `;
+        document.getElementById('inputName').focus();
+      });
+    }
+
+    function saveScore() {
+      let name = document.getElementById('inputName').value.trim();
+      if (!name) {
+        document.getElementById('inputName').style.borderColor = 'var(--error)';
+        document.getElementById('inputName').placeholder = 'Digite seu nome!';
+        return;
+      }
+      document.getElementById('inputName').disabled = true;
+      const entry = { name, score: gameState.score, ts: Date.now() };
+      // Salva no Firebase
+      db.ref('ranking_ohm').push(entry, function(error) {
+        setTimeout(() => { showGameOver(); }, 300);
+      });
+    }
+
+    async function renderRanking() {
+      try {
+        const snapshot = await db.ref('ranking_ohm')
+          .orderByChild('score')
+          .limitToLast(10)
+          .once('value');
+        let arr = [];
+        snapshot.forEach(child => arr.push(child.val()));
+        arr = arr.sort((a,b)=>b.score-a.score || a.ts-b.ts).slice(0,10);
+        if (arr.length === 0) return `<div style="color:#888;text-align:center;">Nenhum jogador ainda!</div>`;
+        return `<ol class="ranking-list">${arr.map((entry, idx) =>
+          `<li>${idx+1}. ${entry.name} <span>${entry.score} pts</span></li>`
+        ).join('')}</ol>`;
+      } catch(e) {
+        return `<div style="color:#888;text-align:center;">Erro ao carregar ranking.</div>`;
+      }
+    }
+
+    // Expondo funções globais
+    window.startGame = startGame;
+    window.showHint = showHint;
+    window.answerQuestion = answerQuestion;
+    window.nextQuestion = nextQuestion;
+    window.showStartScreen = showStartScreen;
+    window.saveScore = saveScore;
+
+    // Início
+    showStartScreen();
+
+    // Touch-friendly button sound effects
+    function enableTouchSound() {
+      document.body.addEventListener('touchstart', function(e) {
+        if (e.target.classList.contains('option-btn')) {
+          audioCorrect.currentTime = 0;
+          audioWrong.currentTime = 0;
+        }
+      }, {passive:true});
+    }
+    enableTouchSound();
+
+    window.addEventListener('orientationchange', function() {});
+    screens.style.transition = "opacity .35s";
+    document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
+
+  </script>
 </body>
 </html>
