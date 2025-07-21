@@ -223,7 +223,7 @@
     const audioCorrect = document.getElementById('audioCorrect');
     const audioWrong = document.getElementById('audioWrong');
 
-    // Sons corrigidos: sons diferentes para acerto e erro
+    // Corrigindo volume e sons para acerto e erro diferentes:
     audioCorrect.src = "https://cdn.pixabay.com/audio/2022/03/15/audio_c14be266c3.mp3";
     audioWrong.src = "https://cdn.pixabay.com/audio/2022/10/16/audio_1fa85cf7b1.mp3";
 
@@ -231,7 +231,7 @@
       gameState.isMusicOn = !gameState.isMusicOn;
       if (gameState.isMusicOn) {
         bgMusic.volume = 0.18;
-        bgMusic.play().catch(() => {}); // evita erro autoplay bloqueado
+        bgMusic.play().catch(() => {});
         musicIcon.innerText = '🔊';
       } else {
         bgMusic.pause();
@@ -387,6 +387,7 @@
     }
 
     async function renderRanking() {
+      // Busca do Firebase os 10 maiores scores
       try {
         const snapshot = await db.ref('ranking_ohm')
           .orderByChild('score')
@@ -394,7 +395,7 @@
           .once('value');
         let arr = [];
         snapshot.forEach(child => arr.push(child.val()));
-        arr = arr.sort((a,b)=>b.score-a.score || a.ts-b.ts).slice(0,10);
+        arr = arr.sort((a,b) => b.score - a.score || a.ts - b.ts).slice(0,10);
         if (arr.length === 0) return `<div style="color:#888;text-align:center;">Nenhum jogador ainda!</div>`;
         return `<ol class="ranking-list">${arr.map((entry, idx) =>
           `<li>${idx+1}. ${entry.name} <span>${entry.score} pts</span></li>`
